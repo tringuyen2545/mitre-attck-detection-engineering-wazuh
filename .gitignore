@@ -1,0 +1,49 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C and C++ binaries
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Memory dumps and sensitive artifacts
+*.dmp
+*.dump
+credentials.tar.gz
+lsass.dmp
+*.enc
+
+# Log files
+*.log
+/var/log/
+
+# Operating System Files
+Thumbs.db
+[Dd]esktop.ini
+.DS_Store
+*.swp
+*~
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Virtual environment
+venv/
+.venv/
+env/
+ENV/
+
+# Temporary and Scratch files
+scratch/
+tmp/
+*.tmp

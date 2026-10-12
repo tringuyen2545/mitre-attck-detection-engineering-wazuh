@@ -1,0 +1,90 @@
+<Sysmon schemaversion="4.90">
+  <!--
+    =============================================================================
+    Cấu hình Microsoft Sysmon v15+ (Dựa trên kiến trúc SwiftOnSecurity & iSpace Lab)
+    Đồ án: Đánh giá Detection Coverage của hệ thống phòng thủ SIEM bằng MITRE ATT&CK
+    Sinh viên: Nguyễn Minh Trí (MSSV: 92510340016)
+    =============================================================================
+  -->
+  <HashAlgorithms>md5,sha256</HashAlgorithms>
+  <CheckRevocation/>
+
+  <EventFiltering>
+    <!-- ===================================================================== -->
+    <!-- EVENT ID 1: PROCESS CREATION (Thu thập dòng lệnh đầy đủ & Cha-Con)   -->
+    <!-- Phục vụ: T1047 (WMI), T1053.005 (Schtasks), T1082 (Discovery)        -->
+    <!-- ===================================================================== -->
+    <RuleGroup name="ProcessCreate" groupRelation="or">
+      <ProcessCreate onmatch="include">
+        <CommandLine condition="contains">-</CommandLine>
+        <CommandLine condition="contains">/</CommandLine>
+        <Image condition="end with">cmd.exe</Image>
+        <Image condition="end with">powershell.exe</Image>
+        <Image condition="end with">pwsh.exe</Image>
+        <Image condition="end with">certutil.exe</Image>
+        <Image condition="end with">procdump.exe</Image>
+        <Image condition="end with">procdump64.exe</Image>
+        <Image condition="end with">wmic.exe</Image>
+        <Image condition="end with">schtasks.exe</Image>
+        <Image condition="end with">systeminfo.exe</Image>
+        <Image condition="end with">whoami.exe</Image>
+        <Image condition="end with">ipconfig.exe</Image>
+        <Image condition="end with">route.exe</Image>
+        <Image condition="end with">net.exe</Image>
+        <Image condition="end with">net1.exe</Image>
+        <Image condition="end with">wevtutil.exe</Image>
+        <Image condition="end with">vssadmin.exe</Image>
+        <Image condition="end with">mshta.exe</Image>
+        <ParentImage condition="end with">wmiprvse.exe</ParentImage>
+      </ProcessCreate>
+    </RuleGroup>
+
+    <!-- ===================================================================== -->
+    <!-- EVENT ID 3: NETWORK CONNECT (Giám sát kết nối mạng ra ngoài)        -->
+    <!-- Phục vụ: Giám sát kết nối C2 Server 192.168.70.100                  -->
+    <!-- ===================================================================== -->
+    <RuleGroup name="NetworkConnect" groupRelation="or">
+      <NetworkConnect onmatch="include">
+        <DestinationPort condition="is">4444</DestinationPort>
+        <DestinationPort condition="is">1514</DestinationPort>
+        <Image condition="end with">powershell.exe</Image>
+        <Image condition="end with">cmd.exe</Image>
+      </NetworkConnect>
+    </RuleGroup>
+
+    <!-- ===================================================================== -->
+    <!-- EVENT ID 10: PROCESS ACCESS (Can thiệp vào không gian bộ nhớ)        -->
+    <!-- Phục vụ: T1003.001 - OS Credential Dumping: LSASS Memory             -->
+    <!-- ===================================================================== -->
+    <RuleGroup name="ProcessAccess" groupRelation="or">
+      <ProcessAccess onmatch="include">
+        <TargetImage condition="end with">lsass.exe</TargetImage>
+      </ProcessAccess>
+    </RuleGroup>
+
+    <!-- ===================================================================== -->
+    <!-- EVENT ID 11: FILE CREATE (Tạo tệp tin mới trên đĩa)                  -->
+    <!-- Phục vụ: T1486 (Ransomware), T1003.001 (Dump file sinh ra)          -->
+    <!-- ===================================================================== -->
+    <RuleGroup name="FileCreate" groupRelation="or">
+      <FileCreate onmatch="include">
+        <TargetFilename condition="contains">.akira</TargetFilename>
+        <TargetFilename condition="contains">lsass.dmp</TargetFilename>
+        <TargetFilename condition="end with">.dmp</TargetFilename>
+        <TargetFilename condition="contains">how_to_decrypt</TargetFilename>
+      </FileCreate>
+    </RuleGroup>
+
+    <!-- ===================================================================== -->
+    <!-- EVENT ID 12 & 13: REGISTRY EVENT (Can thiệp khóa Registry hệ thống)   -->
+    <!-- Phục vụ: T1547.001 (Boot or Logon Autostart Execution: Registry)     -->
+    <!-- ===================================================================== -->
+    <RuleGroup name="RegistryEvent" groupRelation="or">
+      <RegistryEvent onmatch="include">
+        <TargetObject condition="contains">\CurrentVersion\Run</TargetObject>
+        <TargetObject condition="contains">\CurrentVersion\RunOnce</TargetObject>
+      </RegistryEvent>
+    </RuleGroup>
+
+  </EventFiltering>
+</Sysmon>

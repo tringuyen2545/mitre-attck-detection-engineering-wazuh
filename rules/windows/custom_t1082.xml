@@ -1,0 +1,12 @@
+<!-- Rule 100004: Discovery - System Information Discovery (T1082) -->
+<group name="windows,discovery,system_info,">
+  <rule id="100004" level="12">
+    <if_sid>61603, 92032</if_sid>
+    <field name="win.eventdata.originalFileName" type="pcre2">(?i)^(systeminfo\.exe|whoami\.exe|ipconfig\.exe|route\.exe|net\.exe)$</field>
+    <field name="win.eventdata.parentImage" type="pcre2">(?i)\\(powershell\.exe|pwsh\.exe|cmd\.exe|wscript\.exe|cscript\.exe)$</field>
+    <description>Discovery: Phát hiện trình thông dịch lệnh thực thi công cụ dò thám hệ thống (Anti-Bypass T1082)</description>
+    <mitre>
+      <id>T1082</id>
+    </mitre>
+  </rule>
+</group>

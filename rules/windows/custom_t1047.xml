@@ -1,0 +1,12 @@
+<!-- Rule 100001: Execution - WMI Process Call (T1047) -->
+<group name="windows,wmi,execution,">
+  <rule id="100001" level="12">
+    <if_sid>61603, 92032</if_sid>
+    <field name="win.eventdata.originalFileName" type="pcre2">(?i)^(wmic\.exe|Cmd\.Exe|PowerShell\.EXE|pwsh\.dll)$</field>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)process\s+call\s+create</field>
+    <description>Execution: Phát hiện lạm dụng công cụ hệ thống để gọi WMI thực thi mã (T1047)</description>
+    <mitre>
+      <id>T1047</id>
+    </mitre>
+  </rule>
+</group>

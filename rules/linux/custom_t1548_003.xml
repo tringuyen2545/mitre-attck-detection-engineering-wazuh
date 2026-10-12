@@ -1,0 +1,11 @@
+<!-- Rule 100012: Privilege Escalation - Sudo Caching Abuse (T1548.003) -->
+<group name="audit,privilege_escalation,sudoers,">
+  <rule id="100012" level="12">
+    <if_group>audit</if_group>
+    <field name="audit.key">^(audit_sudoers|sudoers_monitor)$</field>
+    <description>Privilege Escalation: Phát hiện tiến trình trái phép can thiệp vào cấu hình SUDO (T1548.003)</description>
+    <mitre>
+      <id>T1548.003</id>
+    </mitre>
+  </rule>
+</group>

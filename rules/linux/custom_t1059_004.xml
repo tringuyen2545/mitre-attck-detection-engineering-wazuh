@@ -1,0 +1,11 @@
+<!-- Rule 100010: Execution - Unix Shell Base64 / Fileless Reverse Shell (T1059.004) -->
+<group name="audit,execution,reverse_shell,">
+  <rule id="100010" level="12">
+    <if_group>audit</if_group>
+    <regex type="pcre2">["/](?:ba|da|z)?sh".*"-i"|(?:base64|openssl)".*"(?:--?d|--decode|base64)"|(?:python|perl|ruby)\S*".*"-[ce]"|nc\S*".*"-e"</regex>
+    <description>Execution: Phát hiện chuỗi hành vi bất biến của Reverse Shell/Fileless Malware - giải mã payload, thực thi mã nội tuyến, hoặc khởi tạo Interactive Shell trái phép (T1059.004)</description>
+    <mitre>
+      <id>T1059.004</id>
+    </mitre>
+  </rule>
+</group>

@@ -1,0 +1,11 @@
+<!-- Rule 100013: Impact - Data Encrypted for Impact / shred & openssl (T1486 Linux) -->
+<group name="audit,impact,ransomware,">
+  <rule id="100013" level="14">
+    <if_group>audit</if_group>
+    <regex type="pcre2">"openssl".*"enc".*"-aes-256-cbc"|"shred".*"-u"</regex>
+    <description>Impact: Phát hiện hành vi xóa file an toàn bằng shred hoặc nén mã hóa dữ liệu (T1486)</description>
+    <mitre>
+      <id>T1486</id>
+    </mitre>
+  </rule>
+</group>

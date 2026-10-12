@@ -1,0 +1,11 @@
+<!-- Rule 100014: Credential Access - /etc/shadow OS Credential Dumping (T1003.008) -->
+<group name="audit,credential_access,shadow,">
+  <rule id="100014" level="12">
+    <if_group>audit</if_group>
+    <field name="audit.key">shadow_monitor</field>
+    <description>Credential Access: Tiến trình truy cập đọc tệp tin mật khẩu nhạy cảm /etc/shadow (T1003.008)</description>
+    <mitre>
+      <id>T1003.008</id>
+    </mitre>
+  </rule>
+</group>

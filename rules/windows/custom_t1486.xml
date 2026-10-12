@@ -1,0 +1,12 @@
+<!-- Rule 100005: Impact - Data Encrypted for Impact (T1486 Windows) -->
+<group name="windows,impact,ransomware,">
+  <rule id="100005" level="14">
+    <if_group>windows</if_group>
+    <regex type="pcre2">(?i)WriteAllBytes|Out-File</regex>
+    <regex type="pcre2">(?i)\.onion|torproject|decrypt|recover|encrypted</regex>
+    <description>Impact: Phát hiện hành vi sinh file mã hóa kết hợp với thông điệp tống tiền/Darkweb (T1486)</description>
+    <mitre>
+      <id>T1486</id>
+    </mitre>
+  </rule>
+</group>

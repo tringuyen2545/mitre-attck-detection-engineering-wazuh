@@ -1,0 +1,54 @@
+## =============================================================================
+## Cấu hình Linux Auditd Syscall Rules (/etc/audit/rules.d/audit.rules)
+## Đồ án: Đánh giá Detection Coverage của hệ thống phòng thủ SIEM bằng MITRE ATT&CK
+## Sinh viên: Nguyễn Minh Trí (MSSV: 92510340016)
+## Máy ảo: Victim Linux (AlmaLinux 10 / IP: 192.168.70.102)
+## =============================================================================
+
+## Xóa bỏ toàn bộ quy tắc cũ trước khi nạp
+-D
+
+## Thiết lập bộ đệm (Buffer Size) tránh nghẽn log khi bị tấn công dồn dập
+-b 8192
+
+## Bỏ cờ failure rate dừng hệ thống khi quá tải
+-f 1
+
+## =============================================================================
+## 1. GIÁM SÁT TỆP TIN XÁC THỰC VÀ ĐẶC QUYỀN HỆ THỐNG
+## Phục vụ: T1003.008 (Credential Access) & T1548.003 (Privilege Escalation)
+## =============================================================================
+
+# Giám sát đọc/ghi/thực thi/thuộc tính trên tệp mật khẩu băm
+-w /etc/shadow -p rwxa -k shadow_monitor
+-w /etc/passwd -p rwxa -k passwd_monitor
+-w /etc/gshadow -p rwxa -k shadow_monitor
+-w /etc/group -p rwxa -k passwd_monitor
+
+# Giám sát can thiệp vào cấu hình phân quyền SUDO
+-w /etc/sudoers -p wa -k audit_sudoers
+-w /etc/sudoers.d/ -p wa -k audit_sudoers
+-w /etc/sudoers.d/ -p wa -k sudoers_monitor
+
+# Giám sát lập lịch tác vụ định kỳ Cron
+-w /etc/cron.d -p wa -k cron_monitor
+-w /etc/crontab -p wa -k cron_monitor
+-w /etc/cron.daily -p wa -k cron_monitor
+-w /etc/cron.hourly -p wa -k cron_monitor
+
+# Giám sát cấu hình dịch vụ SSH
+-w /etc/ssh/sshd_config -p wa -k sshd_config_monitor
+
+# Giám sát dịch vụ Systemd và Timers (T1053.006)
+-w /etc/systemd/system/ -p wa -k systemd_monitor
+
+## =============================================================================
+## 2. GIÁM SÁT LỜI GỌI HỆ THỐNG EXECVE (SYSTEM CALL AUDITING)
+## Phục vụ: T1059.004 (Unix Shell Reverse Shell) & T1486 (Ransomware shred/openssl)
+## =============================================================================
+
+# Bắt trọn vẹn toàn bộ lời gọi hệ thống execve trên kiến trúc 64-bit (x86_64)
+-a always,exit -F arch=b64 -S execve -k exec_monitor
+
+# Bắt trọn vẹn toàn bộ lời gọi hệ thống execve trên kiến trúc 32-bit (b32 compatibility)
+-a always,exit -F arch=b32 -S execve -k exec_monitor

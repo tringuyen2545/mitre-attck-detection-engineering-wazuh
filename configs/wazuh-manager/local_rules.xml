@@ -1,0 +1,126 @@
+<!--
+  =============================================================================
+  TỆP CẤU HÌNH QUY TẮC CỤC BỘ TRÊN WAZUH MANAGER
+  Đường dẫn trên máy chủ: /var/ossec/etc/rules/local_rules.xml
+  Đồ án: Đánh giá Detection Coverage của hệ thống phòng thủ SIEM bằng MITRE ATT&CK
+  Sinh viên: Nguyễn Minh Trí (MSSV: 92510340016)
+  =============================================================================
+-->
+
+<group name="local,syslog,sshd,custom_purple_team,">
+
+  <!-- ===================================================================== -->
+  <!-- 1. QUY TẮC TÙY CHỈNH CHO WINDOWS SERVER (SYSMON TELEMETRY)            -->
+  <!-- ===================================================================== -->
+
+  <!-- T1047: WMI Execution (Sysmon Event ID 1) -->
+  <rule id="100001" level="12">
+    <if_sid>61603, 92032</if_sid>
+    <field name="win.eventdata.originalFileName" type="pcre2">(?i)^(wmic\.exe|Cmd\.Exe|PowerShell\.EXE|pwsh\.dll)$</field>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)process\s+call\s+create</field>
+    <description>Execution: Phát hiện lạm dụng công cụ hệ thống để gọi WMI thực thi mã (T1047)</description>
+    <mitre>
+      <id>T1047</id>
+    </mitre>
+  </rule>
+
+  <!-- T1003.001: LSASS Memory Dump (Sysmon Event ID 10) -->
+  <rule id="100002" level="12">
+    <if_group>sysmon</if_group>
+    <field name="win.system.eventID">^10$</field>
+    <field name="win.eventdata.targetImage" type="pcre2">(?i)lsass\.exe</field>
+    <field name="win.eventdata.sourceImage" type="pcre2" negate="yes">(?i)[\\/](svchost|csrss|wininit|services|lsass|smss|lsm|VBoxService|vmtoolsd)\.exe$</field>
+    <description>Credential Access: Phát hiện tiến trình bất thường can thiệp bộ nhớ LSASS (T1003.001)</description>
+    <mitre>
+      <id>T1003.001</id>
+    </mitre>
+  </rule>
+
+  <!-- T1053.005: Scheduled Task Persistence (Sysmon Event ID 1) -->
+  <rule id="100003" level="12">
+    <if_sid>61603, 92032</if_sid>
+    <field name="win.eventdata.originalFileName" type="pcre2">(?i)^schtasks\.exe$</field>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)\/create</field>
+    <description>Persistence: Phát hiện hành vi tạo lập Scheduled Task (Anti-Bypass T1053.005)</description>
+    <mitre>
+      <id>T1053.005</id>
+    </mitre>
+  </rule>
+
+  <!-- T1082: System Information Discovery (Sysmon Event ID 1) -->
+  <rule id="100004" level="12">
+    <if_sid>61603, 92032</if_sid>
+    <field name="win.eventdata.originalFileName" type="pcre2">(?i)^(systeminfo\.exe|whoami\.exe|ipconfig\.exe|route\.exe|net\.exe)$</field>
+    <field name="win.eventdata.parentImage" type="pcre2">(?i)\\(powershell\.exe|pwsh\.exe|cmd\.exe|wscript\.exe|cscript\.exe)$</field>
+    <description>Discovery: Phát hiện trình thông dịch lệnh thực thi công cụ dò thám hệ thống (Anti-Bypass T1082)</description>
+    <mitre>
+      <id>T1082</id>
+    </mitre>
+  </rule>
+
+  <!-- T1486: Data Encrypted for Impact - Windows Ransomware Script/Note -->
+  <rule id="100005" level="14">
+    <if_group>windows</if_group>
+    <regex type="pcre2">(?i)WriteAllBytes|Out-File</regex>
+    <regex type="pcre2">(?i)\.onion|torproject|decrypt|recover|encrypted</regex>
+    <description>Impact: Phát hiện hành vi sinh file mã hóa kết hợp với thông điệp tống tiền/Darkweb (T1486)</description>
+    <mitre>
+      <id>T1486</id>
+    </mitre>
+  </rule>
+
+  <!-- T1070.001: Indicator Removal - Windows Security Audit Log Cleared -->
+  <rule id="100007" level="13">
+    <if_sid>18104, 18105, 92032, 61603</if_sid>
+    <field name="win.system.eventID">^1102$</field>
+    <description>Defense Evasion: Nhật ký kiểm toán bảo mật Windows bị xóa bỏ (T1070.001 - Event ID 1102)</description>
+    <mitre>
+      <id>T1070.001</id>
+    </mitre>
+  </rule>
+
+  <!-- ===================================================================== -->
+  <!-- 2. QUY TẮC TÙY CHỈNH CHO LINUX (AUDITD SYSCALLS & FIM)                -->
+  <!-- ===================================================================== -->
+
+  <!-- T1059.004: Unix Shell Base64 / Fileless Reverse Shell -->
+  <rule id="100010" level="12">
+    <if_group>audit</if_group>
+    <regex type="pcre2">["/](?:ba|da|z)?sh".*"-i"|(?:base64|openssl)".*"(?:--?d|--decode|base64)"|(?:python|perl|ruby)\S*".*"-[ce]"|nc\S*".*"-e"</regex>
+    <description>Execution: Phát hiện chuỗi hành vi bất biến của Reverse Shell/Fileless Malware - giải mã payload, thực thi mã nội tuyến, hoặc khởi tạo Interactive Shell trái phép (T1059.004)</description>
+    <mitre>
+      <id>T1059.004</id>
+    </mitre>
+  </rule>
+
+  <!-- T1548.003: Sudo Caching / Sudoers.d NOPASSWD Abuse -->
+  <rule id="100012" level="12">
+    <if_group>audit</if_group>
+    <field name="audit.key">^(audit_sudoers|sudoers_monitor)$</field>
+    <description>Privilege Escalation: Phát hiện tiến trình trái phép can thiệp vào cấu hình SUDO (T1548.003)</description>
+    <mitre>
+      <id>T1548.003</id>
+    </mitre>
+  </rule>
+
+  <!-- T1486: Data Encrypted for Impact - Linux Ransomware (shred/openssl) -->
+  <rule id="100013" level="14">
+    <if_group>audit</if_group>
+    <regex type="pcre2">"openssl".*"enc".*"-aes-256-cbc"|"shred".*"-u"</regex>
+    <description>Impact: Phát hiện hành vi xóa file an toàn bằng shred hoặc nén mã hóa dữ liệu (T1486)</description>
+    <mitre>
+      <id>T1486</id>
+    </mitre>
+  </rule>
+
+  <!-- T1003.008: OS Credential Dumping: /etc/shadow -->
+  <rule id="100014" level="12">
+    <if_group>audit</if_group>
+    <field name="audit.key">shadow_monitor</field>
+    <description>Credential Access: Tiến trình truy cập đọc tệp tin mật khẩu nhạy cảm /etc/shadow (T1003.008)</description>
+    <mitre>
+      <id>T1003.008</id>
+    </mitre>
+  </rule>
+
+</group>

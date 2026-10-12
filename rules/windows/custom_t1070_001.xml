@@ -1,0 +1,11 @@
+<!-- Rule 100007: Defense Evasion - Clear Windows Event Logs (T1070.001) -->
+<group name="windows,defense_evasion,clear_logs,">
+  <rule id="100007" level="13">
+    <if_sid>18104, 18105, 92032, 61603</if_sid>
+    <field name="win.system.eventID">^1102$</field>
+    <description>Defense Evasion: Nhật ký kiểm toán bảo mật Windows bị xóa bỏ (T1070.001 - Event ID 1102)</description>
+    <mitre>
+      <id>T1070.001</id>
+    </mitre>
+  </rule>
+</group>
